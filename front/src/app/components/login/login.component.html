@@ -1,0 +1,59 @@
+
+
+
+<div class="loader-wrapper"><div class="lds-ring"><div></div><div></div><div></div><div></div></div></div>
+
+
+<div class="card card-authentication1 mx-auto my-5">
+    <div class="card-body">
+     <div class="card-content p-2">
+         <div class="text-center">
+             <img src="/../assets/assets/images/logo.png"  height="110px" width="180px">
+         </div>
+      <div class="card-title text-uppercase text-center py-3">Se connecter</div>
+      <form (ngSubmit)="onSubmit()" >
+         
+        <div class="form-group">
+          <label  class="sr-only">Nom d'utilisateur</label>
+          <div class="position-relative has-icon-right">
+            <input type="text" name="username" class="form-control input-shadow" placeholder="Enter votre nom d'utilisateur" [(ngModel)]="username">
+            <div class="form-control-position">
+              <i class="icon-user"></i>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="sr-only">Mot de passe</label>
+          <div class="position-relative has-icon-right">
+            <input type="password" name="password" class="form-control input-shadow" placeholder="Entrer votre mot de passe" [(ngModel)]="password">
+            
+            <div class="form-control-position">
+              <i class="icon-lock"></i>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+         <div class="form-group col-6">
+           <div class="icheck-material-white">
+            <input type="checkbox" id="user-checkbox" checked="" />
+           
+          </div>
+         </div>
+         <div class="form-group col-6 text-right">
+          <a [routerLink]="['/forgetPassword']">Mot de passe oublié</a>
+         </div>
+        </div>
+         <button type="submit" class="btn btn-light btn-block">Se connecter</button>
+         
+          
+       
+         
+         </form>
+       </div>
+      </div>
+      <div class="card-footer text-center py-3">
+        <p class="text-warning mb-0">
+          Vous n'avez pas de compte ? <a [routerLink]="['/register']" > 
+            Inscrivez-vous ici</a></p>
+      </div>
+     </div>

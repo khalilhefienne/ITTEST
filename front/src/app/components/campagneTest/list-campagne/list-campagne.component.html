@@ -1,0 +1,241 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des campagnes de test: </h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchCampagneTest(key.value)" #key="ngModel" ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher les campagnes de test..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+             
+  <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+    <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+  </button>
+  <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+    <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+  </button>
+  <button *ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"class="btn btn-light" (click)="openAjout()"ngbTooltip="add"style="margin-left: 10px">
+    <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+    </div>
+    </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+                  <th (click)="onSortColumn('testCaseCount')">
+                Nombre des cas de test
+                    <i *ngIf="sortColumn === 'testCaseCount'" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+                  
+                  <th >
+                  Créateur
+                     </th>
+                     <th >
+                      Platforme
+                         </th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of CampagneTest | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }; let i = index">
+                 
+                  <td>{{ s.nom }}</td>
+                  <td> <div *ngIf="s.isPublic">true</div>
+                    <div *ngIf="!s.isPublic">false</div></td>
+                    <td> <div *ngIf="s.isActif">true</div>
+                        <div *ngIf="!s.isActif">false</div></td>
+                        <td>{{ caseCounts[i] }}</td>     
+                        
+                        <td>{{ findUserById(s.creatorId)?.nom }}</td>
+                        <td>{{ s.platforme?.platform }}</td> 
+                        <td>
+                    <button ngbTooltip="modifier"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"
+                    (click)="openUpdate(s.campagneId)" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="supprimer"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"
+                    (click)="deleteCampagneTest(s.campagneId)" class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="details"
+                    (click)="openDetails(s.campagneId)" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+                    
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+       
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p >Nom : {{ CampagneTestD.nom }}</p>
+    
+    <p>isPublic : 
+        <ng-container *ngIf="CampagneTestD.isPublic">
+          true
+        </ng-container>
+        <ng-container *ngIf="!CampagneTestD.isPublic">
+          false
+        </ng-container>
+      </p>
+
+      <p>isActif : 
+        <ng-container *ngIf="CampagneTestD.isActif">
+          true
+        </ng-container>
+        <ng-container *ngIf="!CampagneTestD.isActif">
+          false
+        </ng-container>
+      </p>
+  </div>
+ 
+</div>
+</ng-template>
+
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="CampagneTestFormUpdate" (ngSubmit)="onSubmit()" class="my-form">
+        <div class="form-group">
+            <label for="nom">Nom:</label>
+            <input class="text-dark" type="text" formControlName="nom" class="form-control"  placeholder="Enter your name"/>
+            <div *ngIf="CampagneTestFormUpdate.controls['nom'].invalid && (CampagneTestFormUpdate.controls['nom'].dirty || CampagneTestFormUpdate.controls['nom'].touched)" class="text-danger">
+              <div *ngIf="CampagneTestFormUpdate.controls['nom'].errors?.['required']">
+               Nom est requis
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="isPublic">isPublic:</label>
+            <input type="checkbox" formControlName="isPublic"  class="form-control"/>
+          </div>
+
+          <div class="form-group">
+            <label for="isActif">isActif:</label>
+            <input type="checkbox" formControlName="isActif"  class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label for="platformm">Plateforme</label>
+            <select formControlName="platformm" class="form-control">
+              <option *ngFor="let platform of platfroms" [ngValue]="platform">{{ platform.platform }}</option>
+            </select>
+          </div>
+    
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!CampagneTestFormUpdate.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <form [formGroup]="CampagneTestForm" (ngSubmit)="onSubmitAdd()" class="my-form">
+            <div class="form-group">
+              <label for="nom">Nom:</label>
+              <input placeholder="Enter your name"
+              class="text-dark" type="text" formControlName="nom" class="form-control" />
+              <div *ngIf="CampagneTestForm.controls['nom'].invalid && (CampagneTestForm.controls['nom'].dirty || CampagneTestForm.controls['nom'].touched)" class="text-danger">
+                <div *ngIf="CampagneTestForm.controls['nom'].errors?.['required']">
+Nom est requis                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="isPublic">isPublic:</label>
+              <input type="checkbox" formControlName="isPublic"  class="form-control"/>
+            </div>
+
+            <div class="form-group">
+              <label for="isActif">isActif:</label>
+              <input type="checkbox" formControlName="isActif"  class="form-control"/>
+            </div>
+      
+            <div class="form-group">
+              <label for="creatorId">Créateur</label>
+              <input type="hidden" formControlName="creatorId"  />
+              {{userConnecte.nom}}
+            </div>
+            
+            <div class="form-group">
+              <label for="platforme">Platform </label>
+              <select formControlName="platformm" class="form-control">
+                <option *ngFor="let platform of platfroms" [ngValue]="platform">{{ platform.platform }}</option>
+              </select>
+            </div>
+            
+    
+            <div class="modal-footer">
+              <button type="submit" [disabled]="!CampagneTestForm.valid" class="btn btn-info">Ajouter</button>
+            </div>
+          </form>
+          
+</div>
+
+</div>
+</ng-template>

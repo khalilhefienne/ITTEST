@@ -1,0 +1,46 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+  }
+  /* styles.css (ou votre fichier CSS) */
+.se {
+  color: black; /* Remplacez ici par le style que vous souhaitez appliquer */
+}
+
+
+/* Add custom styles for the buttons */
+.custom-btn {
+  background-color: #254073; /* Dark blue background color */
+  color: white; /* Text color */
+  border-color: #254073; /* Border color */
+}
+
+.custom-btn:hover {
+  background-color: #254073; /* Darker blue on hover */
+  border-color: #254073; /* Darker border on hover */
+}
+
+/* Style for active buttons */
+.custom-btn.active {
+  background-color: #858d95; /* Gray shade for active button */
+  color: white; /* Text color */
+  border-color: #858d95; /* Border color */
+}
+
+/* Style for the event title */
+.cal-event-title {
+  color: black; /* Black text color for the event title */
+}
+/* Style for the event title */
+.mwl-event-title {
+  color: black; /* Black text color for the event title */
+  /* Add any other styling you want */
+}
+
+
+

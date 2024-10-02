@@ -1,0 +1,242 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des Builds : </h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchBuild(key.value)" #key="ngModel" ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher builds..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+            
+  <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+    <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+  </button>
+  <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+    <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+  </button>
+  <button  *ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')" class="btn btn-light" (click)="openAjout()"ngbTooltip="add"style="margin-left: 10px">
+    <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+    </div>
+    </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of Build | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                    <td>{{ s.titre }}</td>
+                    <td>{{ s.description }}</td>
+                    <td>{{ s.isActif ? 'true' : 'false' }}</td>
+
+                   
+                    <td>{{ s.date_livraison }}</td>
+                  <td>{{ s.campagneTest?.nom }}</td> 
+                 
+                  <td>
+                    <button ngbTooltip="modifier"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"
+                    (click)="openUpdate(s.build_id)" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="supprimer"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')" 
+                    (click)="deleteBuild(s.build_id)" class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="details"
+                    (click)="openDetails(s.build_id)" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+                    
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+     
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Titre : {{ BuildD.titre }}</p>
+    <p>IsActif : {{ BuildD.isActif ? 'true' : 'false' }}</p>
+    <p>Description : {{ BuildD.description }}</p>
+    <p>Date de livraison : {{ BuildD.date_livraison }}</p>
+    
+    <p > Campagne de test: {{ BuildD.campagneTest?.nom }}</p>
+  
+  </div>
+
+</div>
+</ng-template>
+
+
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="buildForm" (ngSubmit)="onSubmit()" class="my-form">
+    
+        <div class="form-group">
+            <label for="titre">Title:</label>
+            <input type="text" formControlName="titre" class="form-control" placeholder="Entrer le titre" />
+            <div *ngIf="buildForm.controls['titre'].invalid && (buildForm.controls['titre'].dirty || buildForm.controls['titre'].touched)" class="text-danger">
+              <div *ngIf="buildForm.controls['titre'].errors?.['required']">
+              Titre est requis
+              </div>
+            </div>
+          </div>
+         
+          <div class="form-group">
+            <label for="isActif">IsActif:</label>
+            <input type="checkbox" formControlName="isActif" class="form-control" />
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea formControlName="description" class="form-control" placeholder="Entrer la description"></textarea>
+            <div *ngIf="buildForm.controls['description'].invalid && (buildForm.controls['description'].dirty || buildForm.controls['description'].touched)" class="text-danger">
+              <div *ngIf="buildForm.controls['description'].errors?.['required']">
+               Description est requis
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="date_livraison"> Delivery date:</label>
+            <input type="date" formControlName="date_livraison" class="form-control" />
+            <div *ngIf="buildForm.controls['date_livraison'].invalid && (buildForm.controls['date_livraison'].dirty || buildForm.controls['date_livraison'].touched)" class="text-danger">
+              <div *ngIf="buildForm.controls['date_livraison'].errors?.['required']">
+               Date de livraison est requis
+              </div>
+            </div>
+          </div>
+    
+ 
+      <div class="form-group">
+        <label for="campagneTest">Campagne de test </label>
+        <select formControlName="campagneTestt" class="form-control">
+          <option *ngFor="let campagneTest of campagneTests" [ngValue]="campagneTest">{{ campagneTest?.nom }}</option>
+        </select>
+      </div>
+      
+     
+      
+     
+      <div class="modal-footer">
+    
+      <button type="submit" [disabled]="!buildForm.valid" class="btn btn-info" >Modification </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form  (ngSubmit)="onSubmitAdd()" class="my-form">
+    
+        <div class="form-group">
+            <label for="titre">Titre:</label>
+            <input placeholder="Enter the title" type="text" [(ngModel)]="nouvelleBuild.titre" name="titre" class="form-control" />
+          </div>
+          
+          <div class="form-group">
+            <label for="isActif">IsActif:</label>
+            <input type="checkbox" [(ngModel)]="nouvelleBuild.isActif" name="isActif" class="form-check-input" />
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea  placeholder="Entrez la description"[(ngModel)]="nouvelleBuild.description" name="description" class="form-control"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="date_livraison"> Date de livraison:</label>
+            <input placeholder="Enter the date"type="date" [(ngModel)]="nouvelleBuild.date_livraison" name="date_livraison" class="form-control" />
+          </div>
+      
+        <div class="form-group">
+          <label for="campagneTest">Campagne de test:</label>
+          <select id="campagneTestId" [(ngModel)]="selectedcampagneTest" name="campagneId"class="form-control" required>
+          <option [ngValue]="selectedcampagneTest" disabled>--Choisir une campagne de test --</option>
+
+            <option *ngFor="let c of campagneTests" [ngValue]="c">{{ c?.nom }}</option>
+          </select>
+       
+        </div>
+        
+     
+       
+        <div class="modal-footer">
+      
+        <button type="submit" class="btn btn-info"  >Ajouter </button>
+      </div>
+    </form>
+</div>
+
+</div>
+</ng-template>

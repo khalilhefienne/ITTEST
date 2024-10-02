@@ -1,0 +1,89 @@
+
+
+
+<div class="card card-authentication1 mx-auto my-4">
+	<div class="card-body">
+	 <div class="card-content p-2">
+		 <div class="text-center">
+			<img src="/../assets/assets/images/logo.png"  height="110px" width="180px">
+		</div>
+	  <div class="card-title text-uppercase text-center py-3">
+		S'inscrire</div>
+  <form (submit)="onRegister()">
+		  <div class="form-group">
+		  <label for="exampleInputName" class="sr-only">Prénom</label>
+		   <div class="position-relative has-icon-right">
+			  <input type="text" name="nom" class="form-control input-shadow" [(ngModel)]="utilisateur.nom" placeholder="Entrer votre prenom">
+			  <div class="form-control-position">
+				  <i class="icon-user"></i>
+			  </div>
+		   </div>
+		  </div>
+	<div class="form-group">
+	  <label for="exampleInputName" class="sr-only">Nom</label>
+	   <div class="position-relative has-icon-right">
+		<input type="text" name="prenom"class="form-control input-shadow" [(ngModel)]="utilisateur.prenom" placeholder="Entrer votre nom">
+		<div class="form-control-position">
+		  <i class="icon-wallet"></i>
+		</div>
+	   </div>
+	  </div>
+		  <div class="form-group">
+		  <label for="exampleInputEmailId" class="sr-only">Email </label>
+		   <div class="position-relative has-icon-right">
+			  <input type="text" name="email"  [(ngModel)]="utilisateur.email"class="form-control input-shadow" placeholder="Entrer votre email ">
+			  <div class="form-control-position">
+				  <i class="icon-envelope-open"></i>
+			  </div>
+		   </div>
+		  </div>
+	<div class="form-group">
+	  <label for="exampleInputEmailId" class="sr-only">Nom d'utilisateur</label>
+	   <div class="position-relative has-icon-right">
+		<input type="text"name="username" [(ngModel)]="utilisateur.username"class="form-control input-shadow" placeholder="Entrer votre nom d'utilisateur">
+		<div class="form-control-position">
+		  <i class="fa fa-bell-o"></i>
+		</div>
+	   </div>
+	  </div>
+		  <div class="form-group">
+		   <label for="exampleInputPassword" class="sr-only">mot de passe</label>
+		   <div class="position-relative has-icon-right">
+			  <input type="text" name="password"  [(ngModel)]="utilisateur.password" class="form-control input-shadow" placeholder="Choisir un mot de passe">
+			  <div class="form-control-position">
+				  <i class="icon-lock"></i>
+			  </div>
+		   </div>
+		  </div>
+		  <!-- Captcha -->
+		  <div class="form-group">
+    <div > <!-- Pour centrer le captcha dans la grille -->
+      <div class="captcha-container">
+        <label style="color: black;" for="captcha">Recopiez le texte ci-dessous :</label>
+        <div class="captcha">
+          <span id="captchaText">{{ captchaText }}</span>
+          
+		  <button type="button" (click)="refreshCaptcha()">
+			<i class="fa fa-refresh"></i> <!-- Icône d'actualisation -->
+		
+		  </button>
+        </div>
+        <input type="text" [(ngModel)]="captchaInput" name="captchaInput" required>
+      </div>
+    </div>
+  </div>
+		 
+		  
+		 <button type="submit" class="btn btn-light btn-block waves-effect waves-light">S'inscrire</button>
+		  
+		
+		
+		 </form>
+	   </div>
+	  </div>
+	  <div class="card-footer text-center py-3">
+		<p class="text-warning mb-0">
+			Vous avez déjà un compte ? <a [routerLink]="['/login']" > 
+				Se connecter ici</a></p>
+	  </div>
+	 </div>

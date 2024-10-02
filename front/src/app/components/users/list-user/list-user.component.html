@@ -1,0 +1,185 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des Utilisateurs : </h5>
+              <div class="card" >
+                
+        <div class="card-body" >
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchUtilisateur(key.value)" #key="ngModel" ngModel name="key" 
+              id="searchName" class="form-control mr-sm-2" placeholder="chercher Utilisateurs..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+              <button class="btn btn-light" (click)="generatePDF()" ngbTooltip="exporter sous forme  pdf" style="margin-left: 10px">
+                <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+              </button>
+              <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter sous forme excel" style="margin-left: 10px">
+                <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+              </button>
+             
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive" >
+          
+           <table   class="table table-striped" id="excel-table" >
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of Utilisateur | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                 
+                  <td>{{ s.username }}</td>
+                  <td>
+                    <img [src]="'/../assets/assets/uploads/' + s.image" alt="profile-image" class="profile" style="width: 32px; height: 32px;">
+                  </td>
+                
+                  <td>{{ s.email }}</td>
+                  <td>{{ s.nom }}</td>
+                  <td>{{ s.prenom }}</td>
+                  <td>{{ s.profil?.nom }}</td> 
+                  <td>
+                    <span  ngbTooltip="active"class="fa fa-lightbulb-on" *ngIf="s.statut"></span>
+                    <span ngbTooltip="non active" class="fa fa-lightbulb-off" *ngIf="!s.statut"></span>
+                  </td>
+                  
+                                    <td>{{ s.date_creation }}</td>
+
+                
+                  <td>
+                    <button (click)="openUpdate(s.id)" class="btn btn-success" ngbTooltip="Modifier" >
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    
+                    <button (click)="deleteUtilisateur(s.id)" class="btn btn-danger"ngbTooltip="supprimer" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                   
+                    
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+     
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+
+    <p>    <img [src]="'/../assets/assets/uploads/' + UtilisateurD.image" alt="profile-image" class="profile" style="width: 32px; height: 32px;">
+    </p>
+    <p>Username: {{ UtilisateurD.username }}</p>
+    <p>Email: {{ UtilisateurD.email }}</p>
+    <p>Nom: {{ UtilisateurD.nom }}</p>
+    <p>Prénom: {{ UtilisateurD.prenom }}</p>
+    <p>Profil: {{ UtilisateurD.profil?.nom }}</p>
+    <p>Statut: {{ UtilisateurD.statut }}</p>
+    <p>Date de création: {{ UtilisateurD.date_creation }}</p>
+
+  </div>
+ 
+</div>
+</ng-template>
+
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="my-form">
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" formControlName="email" placeholder="Entrez l'email" class="form-control" />
+      </div>
+      
+      <div class="form-group">
+        <label for="nom">Nom:</label>
+        <input type="text" formControlName="nom" placeholder="Entrez le nom" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="username">username:</label>
+        <input type="text" formControlName="username" placeholder="Entrez le username" class="form-control" />
+      </div>
+      
+      
+      <div class="form-group">
+        <label for="prenom">Prénom:</label>
+        <input type="text" formControlName="prenom" placeholder="Entrez le prénom" class="form-control" />
+      </div>
+      
+      <div class="form-group">
+        <label for="statut">Statut:</label>
+        <input type="checkbox" formControlName="statut" class="form-control" />
+      </div>
+      
+
+      <div class="form-group">
+        <label for="profil">Profil:</label>
+        <select formControlName="profill" class="form-control">
+          <option *ngFor="let profil of profils" [ngValue]="profil">{{ profil?.nom }}</option>
+        </select>
+      </div>
+     
+   
+      
+      
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!userForm.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+
+

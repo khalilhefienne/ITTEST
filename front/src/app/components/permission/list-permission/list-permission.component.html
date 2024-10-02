@@ -1,0 +1,218 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des Permissions : </h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchPermission(key.value)"
+               #key="ngModel" ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher sequences..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+              <button class="btn btn-light" (click)="generatePDF()" ngbTooltip="exporter sous forme pdf"style="margin-left: 10px">
+                <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+              </button>
+              <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter sous forme excel" style="margin-left: 10px">
+                <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+              </button>
+              <button class="btn btn-light" (click)="openAjout()"ngbTooltip="ajouter"style="margin-left: 10px">
+                <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+                </div>
+                </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of Permission | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                 
+                    <td>{{ s.type }}</td>
+                 
+                  <td>{{ s.profil?.nom }}</td> 
+                  <td>{{ s.fonction?.titre }}</td> 
+                 
+                  <td>
+                    <button (click)="openUpdate(s.permission_id)"ngbTooltip="modifier" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button (click)="deletePermission(s.permission_id)" ngbTooltip="supprimer"class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button (click)="openDetails(s.permission_id)"ngbTooltip="details" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+                    
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+      
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Type : {{ PermissionD.type }}</p>
+ 
+    <p >Profil : {{ PermissionD.profil?.nom }}</p>
+    <p >Fonction : {{ PermissionD.fonction?.titre }}</p>
+
+  
+  </div>
+ 
+</div>
+</ng-template>
+
+
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="permissionForm" (ngSubmit)="onSubmit()" class="my-form">
+    
+        <div class="form-group">
+            <label for="actions">Type:</label>
+            <input type="text" formControlName="type" class="form-control" />
+            <div *ngIf="permissionForm.controls['type'].invalid && (permissionForm.controls['type'].dirty || permissionForm.controls['type'].touched)" class="text-danger">
+              <div *ngIf="permissionForm.controls['type'].errors?.['required']">
+                type est requis.
+              </div>
+            </div>
+          </div>
+          
+       
+    
+ 
+      <div class="form-group">
+        <label for="fonction">Fonction:</label>
+        <select formControlName="fonctionn" class="form-control">
+          <option *ngFor="let fonction of fonctions" [ngValue]="fonction">{{ fonction?.titre }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="profil">Profil:</label>
+        <select formControlName="profill" class="form-control">
+          <option *ngFor="let profil of profils" [ngValue]="profil">{{ profil?.nom }}</option>
+        </select>
+      </div>
+      
+     
+      
+     
+      
+     
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!permissionForm.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form  (ngSubmit)="onSubmitAdd()" class="my-form">
+    
+        <div class="form-group">
+          <label for="type">Type:</label>
+          <select [(ngModel)]="nouvellePermission.type" name="type" class="form-control">
+            <option [ngValue]="nouvellePermission.type" disabled>--Choisissez un type--</option>
+            <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        
+        
+        
+          
+    
+        <div class="form-group">
+          <label for="fonction">Fonction:</label>
+          <select id="fonctionId" [(ngModel)]="selectedFonction" name="fonction_id"class="form-control" required>
+            <option [ngValue]="selectedFonction" disabled>--Choisissez une fonction--</option>
+            <option *ngFor="let c of fonctions" [ngValue]="c">{{ c?.titre }}</option>
+          </select>
+         </div>
+        
+            
+        <div class="form-group">
+          <label for="profil">Profil:</label>
+          <select id="profilId" [(ngModel)]="selectedProfil" placeholder="Choisir un profil"name="profil_id"class="form-control" required>
+            <option [ngValue]="selectedProfil" disabled>--Choisissez un profil--</option>
+
+           <option *ngFor="let c of profils" [ngValue]="c">{{ c?.nom }}</option>
+          </select>
+         </div>
+        
+     
+       
+        <div class="modal-footer">
+        <button type="submit" class="btn btn-info"  >Ajouter </button>
+      </div>
+    </form>
+</div>
+
+</div>
+</ng-template>

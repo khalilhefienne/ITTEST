@@ -1,0 +1,297 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des cas de test de senario {{senarioTest?.nom}}: </h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchCasTest(key.value)" #key="ngModel" 
+              ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher sequences..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+             
+  <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+    <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+  </button>
+  <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+    <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+  </button>
+  <button *ngIf="userAuthorities.includes('Testeur')" class="btn btn-light" (click)="openAjout()"ngbTooltip="ajouter"style="margin-left: 10px">
+    <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+    </div>
+    </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+                  <th (click)="onSortColumn('campagneId')">Campagne de test <i class="fa" [ngClass]="{'fa-sort-asc': sortColumn === 'campagneId' && sortDirection === 'asc', 'fa-sort-desc': sortColumn === 'campagneId' && sortDirection === 'desc'}"></i></th>
+                  <th (click)="onSortColumn('senarioId')">Senario de test <i class="fa" [ngClass]="{'fa-sort-asc': sortColumn === 'senarioId' && sortDirection === 'asc', 'fa-sort-desc': sortColumn === 'senarioId' && sortDirection === 'desc'}"></i></th>
+
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of CasTest | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+
+                  <td>{{ s.titre }}</td>
+                  <td>{{ s.preconditions }}</td>
+                  <td>{{ s.statut }}</td>
+                
+                  <td>{{ s.duree_estime }}</td>
+
+             
+                  
+                  <td>{{ senarioTests[s.senarioId]?.nom }}</td>
+                  <td>{{ campagneTests[s.campagneId]?.nom }}</td>
+                  <td>
+                    <button *ngIf="userAuthorities.includes('Testeur')" ngbTooltip="modifier"(click)="openUpdate(s.test_id)" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button *ngIf="userAuthorities.includes('Testeur')" ngbTooltip="supprimer"(click)="deleteCasTest(s.test_id)" class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="details"(click)="openDetails(s.test_id)" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="Traitement des étapes" (click)="creerEtape(s.test_id)" class="btn btn-light" style="margin-left: 10px">
+                      <i class="zmdi zmdi-plus" style="font-size: 20px;"></i>
+                   
+                    
+                    </button>
+                    
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+      
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Titre : {{ CasTestD.titre }}</p>
+   
+    <p>Préconditions : {{ CasTestD.preconditions }}</p>
+
+    <p>Statut : {{ CasTestD.statut }}</p>
+
+    <p>Durée estimée : {{ CasTestD.duree_estime }}</p>
+    
+  
+    
+    <p >Senario de test : {{ senarioTest.nom }}</p>
+    <p >Campagne de test : {{ campagneTest.nom }}</p>
+  </div>
+ 
+</div>
+</ng-template>
+
+
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="casTestFormUpdate" (ngSubmit)="onSubmit()" class="my-form">
+      <div class="form-group">
+        <label for="campagneId">Campagne de test:</label>
+        <select formControlName="campagneId" class="form-control">
+          <option  class="text-dark"*ngFor="let campagne of campagneTests" [value]="campagne?.campagneId">{{ campagne?.nom }}</option>
+        </select>
+        <div *ngIf="casTestFormUpdate.controls['campagneId'].invalid && (casTestFormUpdate.controls['campagneId'].dirty || casTestFormUpdate.controls['campagneId'].touched)" class="text-danger">
+          <div *ngIf="casTestFormUpdate.controls['campagneId'].errors?.['required']">
+            campagne de test est requis.
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="senarioId">Senario de test:</label>
+        <select formControlName="senarioId" class="form-control">
+          <option *ngFor="let senario of senarioTests" [value]="senario?.senario_id">{{ senario?.nom }}</option>
+        </select>
+        <div *ngIf="casTestFormUpdate.controls['senarioId'].invalid && (casTestFormUpdate.controls['senarioId'].dirty || casTestFormUpdate.controls['senarioId'].touched)" class="text-danger">
+          <div *ngIf="casTestFormUpdate.controls['senarioId'].errors?.['required']">
+            senario de test est requis.
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="titre">Titre:</label>
+        <input class="text-dark" type="text" formControlName="titre" class="form-control" />
+        <div *ngIf="casTestFormUpdate.controls['titre'].invalid && (casTestFormUpdate.controls['titre'].dirty || casTestFormUpdate.controls['titre'].touched)" class="text-danger">
+          <div *ngIf="casTestFormUpdate.controls['titre'].errors?.['required']">
+            Titre est requis.
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="preconditions">Préconditions:</label>
+        <input class="text-dark" type="text" formControlName="preconditions" class="form-control" />
+        <div *ngIf="casTestFormUpdate.controls['preconditions'].invalid && (casTestFormUpdate.controls['preconditions'].dirty || casTestFormUpdate.controls['preconditions'].touched)" class="text-danger">
+          <div *ngIf="casTestFormUpdate.controls['preconditions'].errors?.['required']">
+            Préconditions sont requises.
+          </div>
+        </div>
+      </div>
+   
+      <div class="form-group">
+        <label for="statut">Statut:</label>
+        <input type="checkbox" formControlName="statut"  class="form-control"/>
+      </div>
+  
+      <div class="form-group">
+        <label for="duree_estime">Durée estimée:</label>
+        <input class="text-dark" type="number" formControlName="duree_estime" class="form-control" />
+        <div *ngIf="casTestFormUpdate.controls['duree_estime'].invalid && (casTestFormUpdate.controls['duree_estime'].dirty || casTestFormUpdate.controls['duree_estime'].touched)" class="text-danger">
+          <div *ngIf="casTestFormUpdate.controls['duree_estime'].errors?.['required']">
+            Durée estimée est requise.
+          </div>
+        </div>
+      </div>
+    
+      
+                            
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!casTestFormUpdate.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+    <form [formGroup]="casTestForm" (ngSubmit)="onSubmitAdd()" class="my-form">
+      <div class="form-group">
+        <label for="campagneId">Campagne de test:</label>
+        <select formControlName="campagneId" class="form-control">
+          <option value="" disabled>--Choisissez une campagne de test--</option>
+
+          <option  class="text-dark"*ngFor="let campagne of campagneTests" [value]="campagne?.campagneId">{{ campagne?.nom }}</option>
+        </select>
+        <div *ngIf="casTestForm.controls['campagneId'].invalid && (casTestForm.controls['campagneId'].dirty || casTestForm.controls['campagneId'].touched)" class="text-danger">
+          <div *ngIf="casTestForm.controls['campagneId'].errors?.['required']">
+            campagne de test est requis.
+          </div>
+        </div>
+      </div>
+      <!--
+      <div class="form-group">
+        <label for="senarioId">Senario de test:</label>
+        <select formControlName="senarioId" class="form-control">
+          <option value="" disabled>--Choisissez un senario de test--</option>
+
+          <option *ngFor="let senario of senarioTests" [value]="senario?.senario_id">{{ senario?.nom }}</option>
+        </select>
+        <div *ngIf="casTestForm.controls['senarioId'].invalid && (casTestForm.controls['senarioId'].dirty || casTestForm.controls['senarioId'].touched)" class="text-danger">
+          <div *ngIf="casTestForm.controls['senarioId'].errors?.['required']">
+            senario de test est requis.
+          </div>
+        </div>
+      </div>--->
+      <div class="form-group">
+        <label for="titre">Titre:</label>
+        <input placeholder="Entrez le titre"
+        class="text-dark" type="text" formControlName="titre" class="form-control" />
+        <div *ngIf="casTestForm.controls['titre'].invalid && (casTestForm.controls['titre'].dirty || casTestForm.controls['titre'].touched)" class="text-danger">
+          <div *ngIf="casTestForm.controls['titre'].errors?.['required']">
+            Titre est requis.
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="preconditions">Préconditions:</label>
+        <input placeholder="Entrez le precondition"
+        class="text-dark" type="text" formControlName="preconditions" class="form-control" />
+        <div *ngIf="casTestForm.controls['preconditions'].invalid && (casTestForm.controls['preconditions'].dirty || casTestForm.controls['preconditions'].touched)" class="text-danger">
+          <div *ngIf="casTestForm.controls['preconditions'].errors?.['required']">
+            Préconditions sont requises.
+          </div>
+        </div>
+      </div>
+     
+      <div class="form-group">
+        <label for="statut">statut:</label>
+        <input type="checkbox" formControlName="statut" class="form-control"/>
+       
+      </div>
+   
+
+      <div class="form-group">
+        <label for="duree_estime">Durée estimée:</label>
+        <input placeholder="Entrez la duree estimée"
+        class="text-dark" type="number" formControlName="duree_estime" class="form-control" />
+        <div *ngIf="casTestForm.controls['duree_estime'].invalid && (casTestForm.controls['duree_estime'].dirty || casTestForm.controls['duree_estime'].touched)" class="text-danger">
+          <div *ngIf="casTestForm.controls['duree_estime'].errors?.['required']">
+            Durée estimée est requise.
+          </div>
+        </div>
+      </div>
+   
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!casTestForm.valid" class="btn btn-info" >Ajout </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>

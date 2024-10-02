@@ -1,0 +1,250 @@
+
+
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des Sénarios de test du sequence {{SequenceD?.titre}} </h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchSenarioTest(key.value)" #key="ngModel"
+              ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher sequences..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+             
+  <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+    <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+  </button>
+  <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+    <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+  </button>
+  <button *ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"class="btn btn-light" (click)="openAjout()"ngbTooltip="ajouter"style="margin-left: 10px">
+    <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+    </div>
+    </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of SenarioTest | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                 
+                  <td>{{ s.nom }}</td>
+                  <td>   <div [innerHTML]="s.details"></div></td>
+                
+                 
+                  <td>
+                    <button *ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"ngbTooltip="modifier" (click)="openUpdate(s.senario_id)" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button *ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"ngbTooltip="supprimer"(click)="deleteSenarioTest(s.senario_id)" class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="details"(click)="openDetails(s.senario_id)" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+                    
+  <button ngbTooltip="Traitement des cas de test" (click)="creerCasTest(s.senario_id)" class="btn btn-light" style="margin-left: 10px">
+    <i class="zmdi zmdi-plus" style="font-size: 20px;"></i>
+ 
+  
+  </button>
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+        
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p >Nom : {{ SenarioTestD.nom }}</p>
+    <label><b>Details: </b></label>  <div [innerHTML]="SenarioTestD.details"></div>
+   
+    <p >Sequence : {{ sequence?.titre }}</p>
+  </div>
+ 
+</div>
+</ng-template>
+
+
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="senarioFormupdate" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+            <label for="totalPrice">Nom:</label>
+            <input type="text" formControlName="nom" class="form-control" />
+            <div *ngIf="senarioFormupdate.controls['nom'].invalid && (senarioFormupdate.controls['nom'].dirty || senarioFormupdate.controls['nom'].touched)" class="text-danger">
+              <div *ngIf="senarioFormupdate.controls['nom'].errors?.['required']">
+                Nom  est requis.
+              </div>
+            </div>
+          </div>
+      
+      <div class="form-group">
+        <label>Details :</label>
+        <ckeditor formControlName="details"  [config]="{
+          toolbar: [
+              { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ] },
+              { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', 'Blockquote' ] },
+              { name: 'links', items: [ 'Link', 'Unlink' ] },
+              { name: 'insert', items: [ 'Image', 'Table' ] },
+              { name: 'tools', items: [ 'Maximize' ] },
+              { name: 'document', items: [ 'Source' ] }
+          ],
+          image: {
+              toolbar: [ 'ImageStyle:full', 'ImageStyle:side', '|', 'ImageTextAlternative' ]
+          },
+          table: {
+              contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+          },
+          language: 'fr',
+          allowedContent: true,
+          removePlugins: 'elementspath'
+        }"></ckeditor>
+      </div>
+   
+      <div class="form-group">
+        <label for="sequence_id">Sequence de test:</label>
+        <select formControlName="sequence_id" class="form-control">
+          <option *ngFor="let seq of sequences" [value]="seq.sequence_id">{{ seq.titre }}</option>
+        </select>
+        <div *ngIf="senarioFormupdate.controls['sequence_id'].invalid && (senarioFormupdate.controls['sequence_id'].dirty || senarioFormupdate.controls['sequence_id'].touched)" class="text-danger">
+          <div *ngIf="senarioFormupdate.controls['sequence_id'].errors?.['required']">
+            Sequence est requis.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+
+      <button type="submit" [disabled]="!senarioFormupdate.valid"class="btn btn-info" >Update </button>
+    </div>
+    </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="senarioForm" (ngSubmit)="onSubmitAdd()">
+        <div class="form-group">
+            <label for="totalPrice">Nom:</label>
+            <input placeholder="Entrez le nom"type="text" formControlName="nom" class="form-control" />
+            <div *ngIf="senarioForm.controls['nom'].invalid && (senarioForm.controls['nom'].dirty || senarioForm.controls['nom'].touched)" class="text-danger">
+              <div *ngIf="senarioForm.controls['nom'].errors?.['required']">
+                Nom  est requis.
+              </div>
+            </div>
+          </div>
+      
+      <div class="form-group">
+        <label>Details :</label>
+        <ckeditor formControlName="details"  [config]="{
+          toolbar: [
+              { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ] },
+              { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', 'Blockquote' ] },
+              { name: 'links', items: [ 'Link', 'Unlink' ] },
+              { name: 'insert', items: [ 'Image', 'Table' ] },
+              { name: 'tools', items: [ 'Maximize' ] },
+              { name: 'document', items: [ 'Source' ] }
+          ],
+          image: {
+              toolbar: [ 'ImageStyle:full', 'ImageStyle:side', '|', 'ImageTextAlternative' ]
+          },
+          table: {
+              contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+          },
+          language: 'fr',
+          allowedContent: true,
+          removePlugins: 'elementspath'
+        }"></ckeditor>
+      </div>
+   
+    <!--- <div class="form-group">
+        <label for="sequence_id">Sequence de test:</label>
+        <select formControlName="sequence_id" class="form-control">
+          <option value="" disabled>--Choisissez une sequence de test--</option>
+
+          <option *ngFor="let seq of sequences" [value]="seq.sequence_id">{{ seq.titre }}</option>
+        </select>
+        <div *ngIf="senarioForm.controls['sequence_id'].invalid && (senarioForm.controls['sequence_id'].dirty || senarioForm.controls['sequence_id'].touched)" class="text-danger">
+          <div *ngIf="senarioForm.controls['sequence_id'].errors?.['required']">
+            Sequence est requis.
+          </div>
+        </div>
+      </div>
+      ---> 
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!senarioForm.valid"class="btn btn-info" >Ajouter </button>
+    </div>
+    </form>
+</div>
+
+</div>
+</ng-template>
+<div *ngIf="isModalOpen" class="modal-overlay"></div>

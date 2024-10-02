@@ -1,0 +1,208 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des Platforms : </h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchPlatform(key.value)" #key="ngModel" ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher Platforms..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+              <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+                <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+              </button>
+              <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+                <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+              </button>
+              <button *ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"class="btn btn-light" (click)="openAjout()"ngbTooltip="ajouter"style="margin-left: 10px">
+                <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+                </div>
+                </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of Platform | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                 
+                  <td>{{ s.platform }}</td>
+                  <td>
+                    <i class="zmdi" [ngClass]="{
+                      'zmdi-check': s.EnDesign,
+                      'zmdi-close': !s.EnDesign
+                    }"></i>
+                  </td>
+                  <td>
+                    <i class="zmdi" [ngClass]="{
+                      'zmdi-check': s.EnExecution,
+                      'zmdi-close': !s.EnExecution
+                    }"></i>
+                  </td>
+                  
+                
+                  <td>
+                    <button ngbTooltip="modifier"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"
+                    (click)="openUpdate(s.platform_id)" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="supprimer"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"
+                    (click)="deletePlatform(s.platform_id)" class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="details"*ngIf="userAuthorities.includes('Testeur') || userAuthorities.includes('Chef de Projet')"
+                    (click)="openDetails(s.platform_id)" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+                    
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+       
+        
+
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close"(click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p >Platform : {{ PlatformD.platform }}</p>
+    <p>EnDesign: {{ PlatformD?.EnDesign ? 'true' : 'false' }}</p>
+    <p>EnExecution: {{ PlatformD?.EnExecution ? 'true' : 'false' }}</p>
+    
+
+  </div>
+ 
+</div>
+</ng-template>
+
+
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="platFormForm" (ngSubmit)="onSubmit()" class="my-form">
+    
+      <div class="form-group">
+        <label for="platform">platform:</label>
+        <input class="text-dark" type="text" formControlName="platform" class="form-control" />
+        <div *ngIf="platFormForm.controls['platform'].invalid && (platFormForm.controls['platform'].dirty || platFormForm.controls['platform'].touched)" class="text-danger">
+          <div *ngIf="platFormForm.controls['platform'].errors?.['required']">
+            platform est requis.
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="EnDesign">EnDesign:</label>
+        <input type="checkbox" formControlName="EnDesign" />
+      </div>
+      <div class="form-group">
+        <label for="EnExecution">EnExecution:</label>
+        <input type="checkbox" formControlName="EnExecution" />
+      </div>
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!platFormForm.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+
+<!------- class="bg-image"ajout model-->
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+   
+
+  <form [formGroup]="platFormForm" (ngSubmit)="onSubmitAdd()" class="my-form">
+ 
+    <div class="form-group">
+      <label for="platform">platform:</label>
+      <input placeholder="Entrez la platform"
+      class="text-dark" type="text" formControlName="platform" class="form-control" />
+      <div *ngIf="platFormForm.controls['platform'].invalid && (platFormForm.controls['platform'].dirty || platFormForm.controls['platform'].touched)" class="text-danger">
+        <div *ngIf="platFormForm.controls['platform'].errors?.['required']">
+          platform est requis.
+        </div>
+      </div>
+    </div>
+ 
+    <div class="form-group">
+      <label for="EnDesign">EnDesign:</label>
+      <input type="checkbox" formControlName="EnDesign"  class="form-control" />
+    </div>
+
+    <div class="form-group">
+      <label for="EnExecution">EnExecution:</label>
+      <input type="checkbox" formControlName="EnExecution" class="form-control"  />
+    </div>
+    
+                          
+    <div class="modal-footer">
+    <button type="submit" [disabled]="!platFormForm.valid" class="btn btn-info" >Ajouter </button>
+  </div>
+</form>
+</div>
+
+</div>
+</ng-template>

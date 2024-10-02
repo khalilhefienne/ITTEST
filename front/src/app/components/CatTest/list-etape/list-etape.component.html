@@ -1,0 +1,401 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+
+<div class="content-wrapper">
+  
+  <div class="container-fluid">
+      <div class="row mt-3">
+    
+        
+ <!--------------globale-->
+        <div class="col-lg-12">
+
+     
+            <div class="card">
+              <div class="card-header d-flex justify-content-between">
+                <h5 class="card-text">Campagne de test : {{ campagneTest?.nom }}</h5>
+                <div>
+                  <button *ngIf="userAuthorities.includes('Testeur')"  ngbTooltip="executer un testCase" (click)="ajouterExecution()" class="btn btn-danger">
+                    <i class="zmdi zmdi-play"></i>
+                  </button>
+                  <button ngbTooltip="liste des executions" [routerLink]="['/executions', casTest.test_id]" class="btn btn-dark">
+                    <i class="zmdi zmdi-globe"></i>
+                  </button>
+                </div>
+              </div>
+              
+         <!--  <div class="path">
+                 
+                  <span class="separator"> </span>
+                  <span class="folder" ngbTooltip="Créateur">{{ user?.nom }} {{ user?.prenom }}</span>
+                  <span class="separator"> </span>
+                  <i class="zmdi zmdi-chevron-right" style="font-size: 24px;"> </i>
+                  <span class="separator"> </span>
+                  <span class="folder" ngbTooltip="Projet">{{ projet?.nom }}</span>
+                  <span class="separator"> </span>
+                  <i class="zmdi zmdi-chevron-right" style="font-size: 24px;"> </i>
+                  <span class="separator"> </span>
+                  <span class="folder" ngbTooltip="Séquence de test"> {{ sequenceTest?.titre }}</span>
+                  <span class="separator" > </span>
+                  <i class="zmdi zmdi-chevron-right" style="font-size: 24px;"> </i>
+                  <span class="separator"> </span>
+                  <span class="folder" ngbTooltip="Scénario de test">{{ senarioTest?.nom }}</span>
+                </div> 
+            --->     
+             
+             
+             
+      <div class="card-body">
+        
+  <!--------------detail cas de test-->
+        <div class="col-lg-12">
+
+          <h5 class="card-title">Detail du cas de test : {{ casTest.titre }}<span ngbTooltip="nombre d'executions"> ({{ executionCount }},</span><span ngbTooltip="nombre d'etapes"> {{ etapeCount }})</span>
+          </h5>
+            <div class="card">
+              
+      <div class="card-body">
+
+      
+            
+        
+        <ul class="path-list">
+          <li>
+            <span class="folder">preconditions : {{ casTest.preconditions }}</span>
+          </li>
+          <li>
+            <span class="folder">statut : {{ casTest.statut }}</span>
+          </li>
+         
+          <li>
+            <span class="folder">durée estimée : {{ casTest.duree_estime }}</span>
+          </li>
+        </ul>
+        
+        
+      
+    
+    
+      </div>
+     
+      
+
+
+      
+    </div>
+  </div>
+   <!--------------end cas de test-->
+<!--------------etapes-->
+          <div class="col-lg-12">
+
+            <h5 class="card-title">Les étapes :
+            </h5>
+              <div class="card">
+                
+        <div class="card-body">
+
+        
+              
+          
+        
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchEtape(key.value)" #key="ngModel" ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="Search sequences..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto">
+
+               
+  <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+    <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+  </button>
+  <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+    <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+  </button>
+  <button *ngIf="userAuthorities.includes('Testeur')" class="btn btn-light" (click)="openAjout()"ngbTooltip="ajouter"style="margin-left: 10px">
+    <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+    </div>
+    </button>
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+           <table  class="table table-striped" id="excel-table">
+              <thead>
+                <tr>
+               
+                  <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                    {{ column }}
+                    <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                  </th>
+                <th> Actions</th>
+
+                
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of Etape | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                  <td>{{ s.description }}</td>
+                    <td>{{ s.resultat_attendu }}</td>
+                    <td>{{ s.etat_execution }}</td>
+                    <td>{{ s.ordre }}</td>
+                  
+                    <td>{{ s.type_execution }}</td>
+                 
+                  <td>
+                    <button *ngIf="userAuthorities.includes('Testeur')" ngbTooltip="modifier"
+                    (click)="openUpdate(s.etape_id)" class="btn btn-success">
+                      <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                    </button>
+                    <button  *ngIf="userAuthorities.includes('Testeur')"ngbTooltip="supprimer"
+                    (click)="deleteEtape(s.etape_id)" class="btn btn-danger" style="margin-left: 10px">
+                      <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                    </button>
+                    <button ngbTooltip="details"
+                    (click)="openDetails(s.etape_id)" class="btn btn-info" style="margin-left: 10px">
+                      <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                    </button>
+
+
+                  </td>
+                </tr>
+               
+               
+              </tbody>
+            </table>
+         
+             
+        </div>
+      
+        </div>
+      
+        
+
+       
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+      <div class="card-footer d-flex justify-content-end">
+        <p class="card-text">Créateur : {{ user?.nom }} {{ user?.prenom }}</p>
+      </div>
+      
+      
+    </div>
+ <!--------------end etape-->
+ 
+
+ 
+  </div>
+
+
+ 
+  
+</div>
+
+
+</div> 
+ <!--------------end globale-->
+
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+   
+    <p>Résultat Attendu : {{ EtapeD.resultat_attendu }}</p>
+    <p>État d'exécution : {{ EtapeD.etat_execution }}</p>
+    <p>Ordre : {{ EtapeD.ordre }}</p>
+    <p >Cas de test : {{ EtapeD.casTest?.titre }}</p>
+  
+  </div>
+ 
+</div>
+</ng-template>
+
+
+
+<!------- update modal-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="etapeForm" (ngSubmit)="onSubmit()" class="my-form">
+    
+      
+          
+          <div class="form-group">
+            <label for="resultat_attendu">Résultat Attendu:</label>
+            <input placeholder="Entrez le resultat attendu"
+            type="text" formControlName="resultat_attendu" class="form-control" />
+            <div *ngIf="etapeForm.controls['resultat_attendu'].invalid && (etapeForm.controls['resultat_attendu'].dirty || etapeForm.controls['resultat_attendu'].touched)" class="text-danger">
+              <div *ngIf="etapeForm.controls['resultat_attendu'].errors?.['required']">
+                Résultat Attendu est requis.
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Description:</label>
+            <input placeholder="Entrez la description"
+                   type="text"
+                   formControlName="description"
+                   class="form-control" />
+            <div *ngIf="etapeForm.controls['description'].invalid && (etapeForm.controls['description'].dirty || etapeForm.controls['description'].touched)" class="text-danger">
+              <div *ngIf="etapeForm.controls['description'].errors?.['required']">
+                La description est requise.
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="type_execution">Type d'exécution:</label>
+            <select formControlName="type_execution" class="form-control">
+              <option value="Manuellement">Manuellement</option>
+              <option value="Automatiquement">Automatiquement</option>
+            </select>
+            <div *ngIf="etapeForm.controls['type_execution'].invalid && (etapeForm.controls['type_execution'].dirty || etapeForm.controls['type_execution'].touched)" class="text-danger">
+              <div *ngIf="etapeForm.controls['type_execution'].errors?.['required']">
+                Le type d'exécution est requis.
+              </div>
+            </div>
+          </div>
+          
+          
+          
+          <div class="form-group">
+            <label for="ordre">Ordre:</label>
+            <input placeholder="Entrez l'orde"
+            type="number" formControlName="ordre" class="form-control" />
+            <div *ngIf="etapeForm.controls['ordre'].invalid && (etapeForm.controls['ordre'].dirty || etapeForm.controls['ordre'].touched)" class="text-danger">
+              <div *ngIf="etapeForm.controls['ordre'].errors?.['required']">
+                L'ordre est requis.
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="etat_execution">Etat Execution:</label>
+            <select formControlName="etat_execution" class="form-control">
+              <option value="Échec">Échec</option>
+              <option value="Succès">Succès</option>
+              <option value="Bloqué">Bloqué</option>
+            </select>
+            <div *ngIf="etapeForm.controls['etat_execution'].invalid && (etapeForm.controls['etat_execution'].dirty || etapeForm.controls['etat_execution'].touched)" class="text-danger">
+              <div *ngIf="etapeForm.controls['etat_execution'].errors?.['required']">
+                etat_execution est requis.
+              </div>
+            </div>
+          </div>
+          
+ 
+      <div class="form-group">
+        <label for="casTest">Cas de test:</label>
+        <select formControlName="casTestt" class="form-control">
+
+          <option *ngFor="let casTest of casTests" [ngValue]="casTest">{{ casTest?.titre }}</option>
+        </select>
+      </div>
+      
+     
+      
+     
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!etapeForm.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- add etape model-->
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form  (ngSubmit)="onSubmitAdd()" class="my-form">
+    
+      
+          
+          <div class="form-group">
+            <label for="resultat_attendu">Résultat Attendu:</label>
+            <input placeholder="Entrez le resultat attendu" type="text" [(ngModel)]="nouvelleEtape.resultat_attendu" name="resultat_attendu" class="form-control" />
+          </div>
+          
+          <div class="form-group">
+            <label for="etat_execution">État d'exécution:</label>
+            <select [(ngModel)]="nouvelleEtape.etat_execution" name="etat_execution" class="form-control">
+              <option value="Échec">Échec</option>
+              <option value="Succès">Succès</option>
+              <option value="Bloqué">Bloqué</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="type_execution">Type d'exécution:</label>
+            <select [(ngModel)]="nouvelleEtape.type_execution" name="type_execution" class="form-control">
+              <option value="Manuellement">Manuellement</option>
+              <option value="Automatiquement">Automatiquement</option>
+            </select>
+          </div>
+          
+          
+          <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea placeholder="Entrez la description" [(ngModel)]="nouvelleEtape.description" name="description" class="form-control"></textarea>
+          </div>
+          
+        
+          
+          <div class="form-group">
+            <label for="ordre">Ordre:</label>
+            <input placeholder="Entrez l'ordre" type="number" [(ngModel)]="nouvelleEtape.ordre" name="ordre" class="form-control" />
+          </div>
+  
+      
+         
+        
+     
+       
+        <div class="modal-footer">
+        <button type="submit" class="btn btn-info"  >Ajouter </button>
+      </div>
+    </form>
+</div>
+
+</div>
+</ng-template>
+
+
+
+
+
+
+
+
+
+     
+

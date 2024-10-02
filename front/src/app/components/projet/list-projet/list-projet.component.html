@@ -1,0 +1,389 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+<div *ngIf="isModalOpen" class="modal-overlay"></div>
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des Projets :</h5>
+              <div class="card">
+                
+        <div class="card-body">
+        
+          <div class="d-flex align-items-center justify-content-between">
+            <form class="form-inline">
+              <input type="search" (ngModelChange)="searchProjet(key.value)"
+               #key="ngModel" ngModel name="key" id="searchName" class="form-control mr-sm-2" placeholder="chercher projets..." required style="width: 800px;">
+            </form>
+            <div class="ml-auto" >
+              <button class="btn btn-light"ngbTooltip="exporter en pdf" (click)="generatePDF()" style="margin-left: 10px">
+                <i class="fa fa-file-pdf-o mr-1" aria-hidden="true" style="font-size: 20px;color: red;"></i> PDF
+              </button>
+              <button class="btn btn-light" (click)="exportexcel()"ngbTooltip="exporter en excel" style="margin-left: 10px">
+                <i class="fa fa-file-excel-o mr-1" aria-hidden="true" style="font-size: 20px;color: #50c26b;"></i> Excel
+              </button>
+              <button *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')" class="btn btn-light" (click)="openAjout()"ngbTooltip="ajouter"style="margin-left: 10px">
+                <div class="align-items-center"> <i class="fa fa-plus-circle mr-1" aria-hidden="true" style="font-size: 20px;"></i> 
+                </div>
+                </button>
+               
+            
+            </div>
+          </div>
+          <br>
+          <div class="table-responsive">
+          
+            <div *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')">
+              <table  class="table table-striped" id="excel-table">
+                            <thead>
+                              <tr>
+                             
+                                <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                                  {{ column }}
+                                  <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                                </th>
+              
+                                <th scope="col">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                             <tr *ngFor="let pg of Projets | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                               
+                                <td>{{ pg.nom }}</td>
+                                <td>   <div [innerHTML]="pg.description"></div></td>
+                                <td>{{ pg.prefixe }}</td>
+                                <td>{{ pg.statut }}</td>
+                                <td> <div *ngIf="pg.isGestionnaireAnomalie">true</div>
+                                  <div *ngIf="!pg.isGestionnaireAnomalie">false</div></td>
+                                <td>{{ pg.nomGestionnaire }}</td>
+                              
+                                <td>
+                                  <button *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')" ngbTooltip="modifier" (click)="openUpdate(pg.projet_id)" class="btn btn-success">
+                                    <i class="zmdi zmdi-edit" style="font-size: 20px; "></i>
+                                  </button>
+                                  <button *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')" ngbTooltip="supprimer"(click)="deleteProjet(pg.projet_id)" class="btn btn-danger" style="margin-left: 10px">
+                                    <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                                  </button>
+                                  <button ngbTooltip="details"(click)="openDetails(pg.projet_id)" class="btn btn-info" style="margin-left: 10px">
+                                    <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                                  </button>
+                                  <button ngbTooltip="traitement des sequences" (click)="creerSequence(pg.projet_id)" class="btn btn-light" style="margin-left: 10px">
+                                    <i class="zmdi zmdi-plus" style="font-size: 20px; color: white;"></i>
+                                 
+                                  
+                                  </button>
+              
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                </div>
+                <div *ngIf="!(userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet'))">
+                  <table  class="table table-striped" id="excel-table">
+                                <thead>
+                                  <tr>
+                                 
+                                    <th *ngFor="let column of columns" (click)="onSortColumn(column)">
+                                      {{ column }}
+                                      <i *ngIf="sortColumn === column" [class]="sortDirection === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></i>
+                                    </th>
+                  
+                                    <th scope="col">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                 <tr *ngFor="let pg of Projet | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
+                                   
+                                    <td>{{ pg.nom }}</td>
+                                    <td>   <div [innerHTML]="pg.description"></div></td>
+                                    <td>{{ pg.prefixe }}</td>
+                                    <td>{{ pg.statut }}</td>
+                                    <td> <div *ngIf="pg.isGestionnaireAnomalie">true</div>
+                                      <div *ngIf="!pg.isGestionnaireAnomalie">false</div></td>
+                                    <td>{{ pg.nomGestionnaire }}</td>
+                                  
+                                    <td>
+                                      <button *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')" ngbTooltip="modifier" (click)="openUpdate(pg.projet_id)" class="btn btn-success">
+                                        <i class="zmdi zmdi-edit" style="font-size: 20px;"></i>
+                                      </button>
+                                      <button *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')" ngbTooltip="supprimer"(click)="deleteProjet(pg.projet_id)" class="btn btn-danger" style="margin-left: 10px">
+                                        <i class="zmdi zmdi-delete" style="font-size: 20px;"></i>
+                                      </button>
+                                      <button ngbTooltip="details"(click)="openDetails(pg.projet_id)" class="btn btn-info" style="margin-left: 10px">
+                                        <i class="zmdi zmdi-eye" style="font-size: 20px;"></i>
+                                      </button>
+                                      <button ngbTooltip="traitement des sequences" (click)="creerSequence(pg.projet_id)" class="btn btn-light" style="margin-left: 10px">
+                                        <i class="zmdi zmdi-plus" style="font-size: 20px;"></i>
+                                     
+                                      
+                                      </button>
+                  
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                    </div>
+         
+             
+        </div>
+      
+        </div>
+   
+        <div class="card-footer d-flex justify-content-end" *ngIf="userAuthorities.includes('Administrateur') || userAuthorities.includes('Chef de Projet')">
+          <p class="card-text">Créateur : {{nomuser}}  {{prenom}}</p>
+        </div>
+        
+        
+
+        
+      </div>
+      <div class="text-center ">
+        <pagination-controls (pageChange)="currentPage = $event"  ></pagination-controls>
+      </div>
+    </div>
+</div>
+</div></div>
+ <!-- details model -->
+ <ng-template #modalDetails let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+  <div class="modal-header">
+    <h4 class="modal-title" >Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p >Nom : {{ ProjetD.nom }}</p>
+    <p >Prefixe : {{ ProjetD.prefixe }}</p>
+    <p>isGestionnaireAnomalie : 
+      <ng-container *ngIf="ProjetD.isGestionnaireAnomalie">
+        true
+      </ng-container>
+      <ng-container *ngIf="!ProjetD.isGestionnaireAnomalie">
+        false
+      </ng-container>
+    </p>
+    
+    <p >Nom du gestionnaire : {{ ProjetD.statut }}</p>
+    <p >Date de création : {{ ProjetD.nomGestionnaire }}</p>
+   
+  </div>
+ 
+</div>
+</ng-template>
+
+
+
+<!------- class="bg-image"update model-->
+<ng-template #modalUpdate let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Modification</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+    <form [formGroup]="projetForm" (ngSubmit)="onSubmit()" class="my-form">
+
+       <div class="form-group">
+            <label for="titre">Nom:</label>
+            <input placeholder="Entrez le nom" class="text-dark" type="text" formControlName="nom" class="form-control" />
+            <div *ngIf="projetForm.controls['nom'].invalid && (projetForm.controls['nom'].dirty || projetForm.controls['nom'].touched)" class="text-danger">
+              <div *ngIf="projetForm.controls['nom'].errors?.['required']">
+                Nom est requis.
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description :</label>
+            <ckeditor formControlName="description"  [config]="{
+              toolbar: [
+                  { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ] },
+                  { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', 'Blockquote' ] },
+                  { name: 'links', items: [ 'Link', 'Unlink' ] },
+                  { name: 'insert', items: [ 'Image', 'Table' ] },
+                  { name: 'tools', items: [ 'Maximize' ] },
+                  { name: 'document', items: [ 'Source' ] }
+              ],
+              image: {
+                  toolbar: [ 'ImageStyle:full', 'ImageStyle:side', '|', 'ImageTextAlternative' ]
+              },
+              table: {
+                  contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+              },
+              language: 'fr',
+              allowedContent: true,
+              removePlugins: 'elementspath'
+            }"></ckeditor>
+          </div>
+          <div class="form-group">
+            <label for="perimetre">Préfixe:</label>
+            <input  placeholder="Entrez le pefixe"class="text-dark"type="text" formControlName="prefixe" class="form-control" />
+            <div *ngIf="projetForm.controls['prefixe'].invalid && (projetForm.controls['prefixe'].dirty || projetForm.controls['prefixe'].touched)" class="text-danger">
+              <div *ngIf="projetForm.controls['prefixe'].errors?.['required']">
+                Préfixe est requis.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="statut">Statut:</label>
+            <select formControlName="statut" class="form-control">
+              <option value="">Sélectionner un statut</option>
+              <option value="Nouveau">Nouveau</option>
+              <option value="En cours">En cours</option>
+              <option value="Terminé">Terminé</option>
+            </select>
+            <div *ngIf="projetForm.controls['statut'].invalid && (projetForm.controls['statut'].dirty || projetForm.controls['statut'].touched)" class="text-danger">
+              <div *ngIf="projetForm.controls['statut'].errors?.['required']">
+                Statut est requis.
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="perimetre">IsGestionnaireAnomalie:</label>
+            <input type="checkbox" formControlName="isGestionnaireAnomalie" class="form-control" />
+            <div *ngIf="projetForm.controls['isGestionnaireAnomalie'].invalid && (projetForm.controls['isGestionnaireAnomalie'].dirty || projetForm.controls['isGestionnaireAnomalie'].touched)" class="text-danger">
+              <div *ngIf="projetForm.controls['isGestionnaireAnomalie'].errors?.['required']">
+                isGestionnaireAnomalie est requis.
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="perimetre">Nom getsionnaire:</label>
+            <input  class="text-dark"type="text" formControlName="nomGestionnaire" class="form-control" />
+            <div *ngIf="projetForm.controls['nomGestionnaire'].invalid && (projetForm.controls['nomGestionnaire'].dirty || projetForm.controls['nomGestionnaire'].touched)" class="text-danger">
+              <div *ngIf="projetForm.controls['nomGestionnaire'].errors?.['required']">
+                Nom getsionnaire est requis.
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="creatorId">Createur:</label>
+            <select formControlName="creatorId" class="form-control">
+              <option value="" disabled>--Choisissez un createur--</option>
+              <option class="text-dark" *ngFor="let user of utils" [value]="user.id">{{ user?.nom }}</option>
+            </select>
+            <div *ngIf="projetForm.controls['creatorId'].invalid && (projetForm.controls['creatorId'].dirty || projetForm.controls['creatorId'].touched)" class="text-danger">
+              <div *ngIf="projetForm.controls['creatorId'].errors?.['required']">
+                Créateur est requis.
+              </div>
+            </div>
+          </div>
+
+      
+    
+      <div class="modal-footer">
+      <button type="submit" [disabled]="!projetForm.valid" class="btn btn-info" >Modifier </button>
+    </div>
+  </form>
+</div>
+
+</div>
+</ng-template>
+<!------- class="bg-image"ajout model-->
+<ng-template #modalAjout let-modal>
+  <div class="modal-content" style="background-color: #969696;">
+    <div class="modal-header">
+      <h4 class="modal-title ">Ajout</h4>
+      <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="projetForm" (ngSubmit)="onSubmitAdd()" class="my-form">
+    
+        <div class="form-group">
+          <label for="titre">Nom:</label>
+          <input placeholder="Entrez le nom" class="text-dark" type="text" formControlName="nom" class="form-control" />
+          <div *ngIf="projetForm.controls['nom'].invalid && (projetForm.controls['nom'].dirty || projetForm.controls['nom'].touched)" class="text-danger">
+            <div *ngIf="projetForm.controls['nom'].errors?.['required']">
+              Nom est requis.
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description :</label>
+          <ckeditor formControlName="description"  [config]="{
+            toolbar: [
+                { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ] },
+                { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', 'Blockquote' ] },
+                { name: 'links', items: [ 'Link', 'Unlink' ] },
+                { name: 'insert', items: [ 'Image', 'Table' ] },
+                { name: 'tools', items: [ 'Maximize' ] },
+                { name: 'document', items: [ 'Source' ] }
+            ],
+            image: {
+                toolbar: [ 'ImageStyle:full', 'ImageStyle:side', '|', 'ImageTextAlternative' ]
+            },
+            table: {
+                contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+            },
+            language: 'fr',
+            allowedContent: true,
+            removePlugins: 'elementspath'
+          }"></ckeditor>
+        </div>
+        <div class="form-group">
+          <label for="perimetre">Préfixe:</label>
+          <input  placeholder="Entrez le prefixe" class="text-dark"type="text" formControlName="prefixe" class="form-control" />
+          <div *ngIf="projetForm.controls['prefixe'].invalid && (projetForm.controls['prefixe'].dirty || projetForm.controls['prefixe'].touched)" class="text-danger">
+            <div *ngIf="projetForm.controls['prefixe'].errors?.['required']">
+              Préfixe est requis.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="statut">Statut:</label>
+          <select formControlName="statut" class="form-control">
+            <option value="">Sélectionner un statut</option>
+            <option value="Nouveau">Nouveau</option>
+            <option value="En cours">En cours</option>
+            <option value="Terminé">Terminé</option>
+          </select>
+          <div *ngIf="projetForm.controls['statut'].invalid && (projetForm.controls['statut'].dirty || projetForm.controls['statut'].touched)" class="text-danger">
+            <div *ngIf="projetForm.controls['statut'].errors?.['required']">
+              Statut est requis.
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="perimetre">IsGestionnaireAnomalie:</label>
+          <input type="checkbox" formControlName="isGestionnaireAnomalie" class="form-control" />
+          <div *ngIf="projetForm.controls['isGestionnaireAnomalie'].invalid && (projetForm.controls['isGestionnaireAnomalie'].dirty || projetForm.controls['isGestionnaireAnomalie'].touched)" class="text-danger">
+            <div *ngIf="projetForm.controls['isGestionnaireAnomalie'].errors?.['required']">
+              isGestionnaireAnomalie est requis.
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="perimetre">Nom getsionnaire:</label>
+          <input  placeholder="Entrez le nom du gestionnaire" class="text-dark"type="text" formControlName="nomGestionnaire" class="form-control" />
+          <div *ngIf="projetForm.controls['nomGestionnaire'].invalid && (projetForm.controls['nomGestionnaire'].dirty || projetForm.controls['nomGestionnaire'].touched)" class="text-danger">
+            <div *ngIf="projetForm.controls['nomGestionnaire'].errors?.['required']">
+              Nom getsionnaire est requis.
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="creatorId">Creator</label>
+          <input type="hidden" formControlName="creatorId" />
+          {{userConnecte.nom}}
+        </div>
+        
+          <div class="modal-footer">
+          <button type="submit" [disabled]="!projetForm.valid" class="btn btn-info" >Ajouter </button>
+        </div>
+      </form>
+</div>
+
+</div>
+</ng-template>

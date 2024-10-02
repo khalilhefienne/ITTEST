@@ -1,0 +1,104 @@
+<app-sidebar ></app-sidebar>
+<app-header ></app-header>
+
+
+<div class="clearfix"></div>
+<div class="content-wrapper">
+  <div class="container-fluid">
+      <div class="row mt-3">
+          <div class="col-lg-12">
+            <h5 class="card-title"> Liste des executions : </h5>
+              <div class="card">
+                
+                <div class="card-body">
+                  <div class="row text-center">
+                    <!-- First group on the left -->
+                    <div class="col-md-4">
+                      <div class="btn-group">
+                        <button class="btn btn-primary custom-btn"
+            mwlCalendarPreviousView
+            [view]="view"
+            [(viewDate)]="viewDate"
+            (viewDateChange)="closeOpenMonthViewDay()">Précedent
+    </button>
+    <button class="btn btn-dark "
+            mwlCalendarToday
+            [(viewDate)]="viewDate">Aujourd'hui
+    </button>
+    <button class="btn btn-primary custom-btn"
+            mwlCalendarNextView
+            [view]="view"
+            [(viewDate)]="viewDate"
+            (viewDateChange)="closeOpenMonthViewDay()">Suivant
+    </button>
+                      </div>
+                    </div>
+                    <!-- Month name in the middle -->
+                    <div class="col-md-4">
+                      <h3>{{ viewDate | date: 'MMMM yyyy' : 'fr' }}</h3>
+                    </div>
+                    
+                    <!-- Second group on the right -->
+                    <div class="col-md-4">
+                      <div class="btn-group">
+                        <div class="btn  custom-btn"
+                             (click)="setView(CalendarView.Month)"
+                             [class.active]="view === CalendarView.Month"
+                        >Mois
+                        </div>
+                        <div class="btn  custom-btn"
+                             (click)="setView(CalendarView.Week)"
+                             [class.active]="view === CalendarView.Week"
+                        >Semaine
+                        </div>
+                        <div class="btn  custom-btn"
+                             (click)="setView(CalendarView.Day)"
+                             [class.active]="view === CalendarView.Day"
+                        >Jour
+                        </div>
+                      </div>
+                    </div>
+                    
+                  </div>
+                  
+                  <!-- Calendar views -->
+                  <div [ngSwitch]="view">
+                    <mwl-calendar-month-view
+                      *ngSwitchCase="CalendarView.Month"
+                      [viewDate]="viewDate"
+                      [events]="convertToCalendarEvents(Execution)"
+                      [eventTitleTemplate]="eventTitleTemplate"
+                    ></mwl-calendar-month-view>
+                    <mwl-calendar-week-view
+                      *ngSwitchCase="CalendarView.Week"
+                      [viewDate]="viewDate"
+                      [events]="convertToCalendarEvents(Execution)"
+                      [eventTitleTemplate]="eventTitleTemplate"
+                    ></mwl-calendar-week-view>
+                    <mwl-calendar-day-view
+                      *ngSwitchCase="CalendarView.Day"
+                      [viewDate]="viewDate"
+                      [events]="convertToCalendarEvents(Execution)"
+                      [eventTitleTemplate]="eventTitleTemplate"
+                    ></mwl-calendar-day-view>
+                  </div>
+                  
+                  <!-- Custom template for displaying event title -->
+                  <ng-template #eventTitleTemplate let-event="event" let-locale="locale">
+                    <div class="mwl-event-title">
+                      {{ event.title }}
+                    </div>
+                  </ng-template>
+                  
+                </div>
+                
+      
+    </div>
+</div>
+</div></div>
+
+
+
+
+
+

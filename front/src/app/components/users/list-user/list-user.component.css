@@ -1,0 +1,16 @@
+.fa-lightbulb-on::before {
+    content: "\f0eb"; /* Code Unicode de l'icône de lampe allumée */
+    color: yellow; /* Couleur de l'icône allumée */
+  }
+  
+  .fa-lightbulb-off::before {
+    content: "\f0eb"; /* Code Unicode de l'icône de lampe éteinte */
+    color: gray; /* Couleur de l'icône éteinte */
+  }
+  
+
+
+  .pagination-wrapper {
+    color: blue;
+  }
+  
